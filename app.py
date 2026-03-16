@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, Response, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 app = Flask(__name__)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://LaserBread:Foof@localhost/iplist'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://LaserBread:Foof@172.16.0.10/iplist'
 db = SQLAlchemy(app)
 
 class Entry(db.Model):
@@ -34,7 +34,28 @@ def getall():
 @app.route('/add',methods=["POST"])
 def add():
     try:
-        pass
+        data = request.get_json()
+        new_entry = Entry(
+            name=data.get('name'),
+            hostname=data.get('hostname'),
+            ipv4=data.get('ipv4'),
+            cidrmask=data.get('cidrmask'),
+            mac=data.get('mac'),
+            notes=data.get('notes')
+        )
+
+        db.session.add(new_entry)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Entry added successfully',
+            'id': new_entry.id
+        }), 201
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
