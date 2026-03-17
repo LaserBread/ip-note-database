@@ -2,6 +2,8 @@ from flask import Flask, jsonify, Response, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
+from werkzeug.exceptions import BadRequest, NotFound
+import re
 
 app = Flask(__name__)
 
@@ -19,7 +21,6 @@ class Entry(db.Model):
     mac: Mapped[str]
     notes: Mapped[str]
 
-
 @app.route('/')
 def index():
     return Response("piss off",404)
@@ -35,8 +36,9 @@ def getall():
 def add():
     try:
         data = request.get_json()
+
         new_entry = Entry(
-            name=data.get('name'),
+            name=data.get['name'],
             hostname=data.get('hostname'),
             ipv4=data.get('ipv4'),
             cidrmask=data.get('cidrmask'),
@@ -51,11 +53,71 @@ def add():
             'message': 'Entry added successfully',
             'id': new_entry.id
         }), 201
-    
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), e.response if hasattr(e,"response") else 500
+    
+@app.route('/update/<int:entry_id>',methods=["PUT"])
+def update(entry_id):
+    try:
+        data = request.get_json()
+        
+        if entry_id == None:
+            raise BadRequest("400 Bad Request: Missing ID", 400)
+        
+        entry = db.session.get(Entry, entry_id)
+        
+        if entry == None:
+            raise NotFound(f"404 Not Found: Entry with ID {entry_id} doesn't exist.", 404)
 
+        if 'name' in data:
+            entry.name = data['name']
+        if 'hostname' in data:
+            entry.hostname = data['hostname']
+        if 'ipv4' in data:
+            entry.ipv4 = data['ipv4']
+        if 'cidrmask' in data:
+            entry.cidrmask = data['cidrmask']
+        if 'mac' in data:
+            entry.mac = data['mac']
+        if 'notes' in data:
+            entry.notes = data['notes']
+
+        db.session.commit()
+        return jsonify({
+            'message': 'Entry updated successfully',
+            'id': entry.id
+        }), 200
+    
+    except KeyError:
+        return jsonify({"error": "400 Bad Request: ID is probably missing"}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), e.response if hasattr(e,"response") else 500
+    
+@app.route('/delete/<int:entry_id>',methods=["PUT"])
+def update(entry_id):
+    try:
+        data = request.get_json()
+        
+        if entry_id == None:
+            raise BadRequest("400 Bad Request: Missing ID", 400)
+        
+        entry = db.session.get(Entry, entry_id)
+        
+        if entry == None:
+            raise NotFound(f"404 Not Found: Entry with ID {entry_id} doesn't exist.", 404)
+
+        db.session.delete(entry)
+        db.session.commit()
+        
+        return jsonify({'message': 'Entry deleted successfully', 'id': entry_id}), 200
+    
+    except KeyError:
+        return jsonify({"error": "400 Bad Request: ID is probably missing"}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), e.response if hasattr(e,"response") else 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
