@@ -96,7 +96,7 @@ def update(entry_id):
         return jsonify({'error': str(e)}), e.response if hasattr(e,"response") else 500
     
 @app.route('/delete/<int:entry_id>',methods=["PUT"])
-def update(entry_id):
+def delete(entry_id):
     try:
         data = request.get_json()
         
