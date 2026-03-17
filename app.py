@@ -95,7 +95,7 @@ def update(entry_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), e.response if hasattr(e,"response") else 500
     
-@app.route('/delete/<int:entry_id>',methods=["PUT"])
+@app.route('/delete/<int:entry_id>',methods=["DELETE"])
 def delete(entry_id):
     try:
         data = request.get_json()
