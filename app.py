@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 app = Flask(__name__)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://LaserBread:Foof@172.16.0.10/iplist'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://LaserBread:Foof@localhost/iplist'
 db = SQLAlchemy(app)
 
 class Entry(db.Model):
