@@ -98,7 +98,6 @@ def update(entry_id):
 @app.route('/delete/<int:entry_id>',methods=["DELETE"])
 def delete(entry_id):
     try:
-        data = request.get_json()
         
         if entry_id == None:
             raise BadRequest("400 Bad Request: Missing ID", 400)
