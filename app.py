@@ -20,7 +20,7 @@ class Entry(db.Model):
     cidrmask: Mapped[int]
     mac: Mapped[str]
     notes: Mapped[str]
-    ipv6: Mapped[bytes] = mapped_column(INET6, nullable=True)
+    ipv6: Mapped[str] = mapped_column(INET6, nullable=True)
 
 @app.route('/')
 def index():
@@ -29,7 +29,7 @@ def index():
 @app.route('/getall',methods=["GET"])
 def getall():
     result = Entry.query.all()
-    out = [{key: value.hex() if isinstance(value, bytes) and key not in ['sa_instance_state'] else value for key, value in entry.__dict__.items() if key not in ['_sa_instance_state']} for entry in result]
+    out = [{key: value for key, value in entry.__dict__.items() if key not in ['_sa_instance_state']} for entry in result]
 
     return jsonify(out)
 
