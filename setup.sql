@@ -7,9 +7,10 @@ CREATE TABLE IF NOT EXISTS Entries(
     ipv4 INT UNSIGNED,
     cidrmask INT UNSIGNED,
     mac varchar(17),
+    ipv6 binary(16),
     notes text,
     CONSTRAINT chk_at_least_one_identifier
-    CHECK (ipv4 IS NOT NULL OR hostname IS NOT NULL),
+    CHECK (ipv4 IS NOT NULL OR hostname IS NOT NULL OR ipv6 IS NOT NULL),
     CONSTRAINT chk_mac
     CHECK (mac IS NULL OR mac REGEXP '^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'),
     CONSTRAINT chk_cidr
