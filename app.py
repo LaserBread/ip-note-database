@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, Response, request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import LargeBinary
+from sqlalchemy.dialects.mysql import INET6
 from sqlalchemy.orm import Mapped, mapped_column
 from werkzeug.exceptions import BadRequest, NotFound
 import re
@@ -20,7 +20,7 @@ class Entry(db.Model):
     cidrmask: Mapped[int]
     mac: Mapped[str]
     notes: Mapped[str]
-    ipv6: Mapped[bytes] = mapped_column(LargeBinary(16), nullable=True)
+    ipv6: Mapped[bytes] = mapped_column(INET6, nullable=True)
 
 @app.route('/')
 def index():
@@ -38,10 +38,6 @@ def add():
     try:
         data = request.get_json()
 
-        ipv6_data = None
-        if 'ipv6' in data and data['ipv6'] is not None:
-            ipv6_data = bytes.fromhex(data['ipv6'])
-
         new_entry = Entry(
             name=data['name'],
             hostname=data.get('hostname'),
@@ -49,7 +45,7 @@ def add():
             cidrmask=data.get('cidrmask'),
             mac=data.get('mac'),
             notes=data.get('notes'),
-            ipv6=ipv6_data
+            ipv6=data.get('ipv6')
         )
 
         db.session.add(new_entry)
@@ -85,13 +81,7 @@ def update(entry_id):
         if 'cidrmask' in data:
             entry.cidrmask = data['cidrmask']
         if 'ipv6' in data:
-            if data['ipv6'] is not None:
-                try:
-                    entry.ipv6 = bytes.fromhex(data['ipv6'])
-                except ValueError as e:
-                    raise BadRequest(f"Invalid IPv6 '{data['ipv6']}'.")
-            else:
-                entry.ipv6 = None
+            entry.ipv6 = data['ipv6']
         if 'mac' in data:
             entry.mac = data['mac']
         if 'notes' in data:

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS Entries(
     ipv4 INT UNSIGNED,
     cidrmask INT UNSIGNED,
     mac varchar(17),
-    ipv6 binary(16),
+    ipv6 INET6,
     notes text,
     CONSTRAINT chk_at_least_one_identifier
     CHECK (ipv4 IS NOT NULL OR hostname IS NOT NULL OR ipv6 IS NOT NULL),
@@ -17,5 +17,5 @@ CREATE TABLE IF NOT EXISTS Entries(
     CHECK (cidrmask <=32)
 );
 
-INSERT INTO Entries (name, hostname, ipv4, cidrmask, mac, notes)
-    VALUES('Router','MyGateway',INET_ATON('192.168.0.1'),24,"5F:50:DE:AD:BE:EF",'Example router setup for this thing');
+INSERT INTO Entries (name, hostname, ipv4, cidrmask, ipv6, mac, notes)
+    VALUES('Router','MyGateway',INET_ATON('192.168.0.1'),24, "b2e1:e6b5:49ad:fd4b:cfa5:ef82:7630:aa35", "5F:50:DE:AD:BE:EF",'Example router setup for this thing');
